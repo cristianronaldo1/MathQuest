@@ -1,34 +1,16 @@
 "use client";
 import { useState } from "react";
-import { GoogleGenerativeAI, SchemaType } from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+//Importa al esquema desde el archivo
+import { schema } from "./Schema";
 
 // Configuración del modelo de Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_KEY);
-
-// Pasar a otro archivo
-const schema = {
-  description: "Lista de respuestas",
-  type: SchemaType.ARRAY,
-  items: {
-    type: SchemaType.OBJECT,
-    properties: {
-      respuesta: {
-        type: SchemaType.STRING,
-        description: "Texto de respuesta",
-      },
-      correcta: {
-        type: SchemaType.BOOLEAN,
-        description: "Es verdadero en caso que sea correcto o falso en caso que sea incorrecto",
-      },
-    },
-    required: ["respuesta", "correcta"],
-  },
-};
-
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
   generationConfig: {
     responseMimeType: "application/json",
+    // aqui utiliza el esquema importado.
     responseSchema: schema,
   },
 });
@@ -44,16 +26,17 @@ export default function Home() {
   const geminiCall = async () => {
     try {
       const result = await model.generateContent(fixedPrompt);
-
-      // Asegúrate de que la respuesta sea JSON parseable
       const responseJSON = JSON.parse(result.response.text());
 
+
       if (Array.isArray(responseJSON)) {
-        // Encuentra las respuestas según el campo `correcta`
+        // Encuentra las respuestas según el campo correcta
         const correct = responseJSON.find((item) => item.correcta);
         const wrongs = responseJSON.filter((item) => !item.correcta);
 
-        // Asignar valores de manera segura
+      
+
+        //Asignar valores de manera segura
         setCorrectAnswer(correct?.respuesta || "No disponible");
         setWrongAnswer1(wrongs[0]?.respuesta || "No disponible");
         setWrongAnswer2(wrongs[1]?.respuesta || "No disponible");
@@ -66,21 +49,31 @@ export default function Home() {
   };
 
   return (
-    <section>
-      <h3>Primer reto</h3>
-      <div>
-        <h1>Teniendo en cuenta el siguiente planteamiento, genera tres resultados donde uno sea correcto:</h1>
-        <p className="w-[750px] h-[300px] container mx-auto px-4 bg-slate-400 mb-3 p-4 rounded-md text-black flex justify-left">
+    <section className="flex gap-4">
+      <div className=" w-1/3 bg-blue-300 border-2 border-blue-950 text-2xl text-black " >
+  
+        <lu>
+          <li className="menus">Actividades</li>
+          <li className="menus">Entrenamiento</li>
+          <li className="menus">Repasa tus logros</li>
+          <li className="menus">Dashboard</li>
+          <li className="menus">Salir</li>
+        </lu>
+      </div>
 
-          Tus tíos en Ibarra, Ecuador, invitan a ti y a tu hermano a pasar las vacaciones en su casa. Para celebrar tu cumpleaños, <br />
-          tu tía ha planeado asistir a un partido de fútbol en el estadio Olímpico Atahualpa en Quito. Tus tíos cubrirán las entradas, <br />
-          la noche en el hotel y la comida durante el partido, además de un recuerdo del equipo. Tienen un presupuesto total de $575.<br />
-          Tu tarea es calcular el costo de las entradas, la comida, el transporte del hotel al estadio y de vuelta, y el recuerdo del equipo. <br />
+      <div className="bg-gray-300 text-black p-3 rounded-lg shadow-md w-1/3">
+        <h1 className="p-2">Teniendo en cuenta el siguiente planteamiento, genera tres resultados donde uno sea correcto:</h1>
+        <p className="max-w-lg mx-auto bg-blue-300 p-3 text-black rounded-md w-auto">
+         
+          Tus tíos en Ibarra, Ecuador, invitan a ti y a tu hermano a pasar las vacaciones en su casa. Para celebrar tu cumpleaños,
+          tu tía ha planeado asistir a un partido de fútbol en el estadio Olímpico Atahualpa en Quito. Tus tíos cubrirán las entradas,
+          la noche en el hotel y la comida durante el partido, además de un recuerdo del equipo. Tienen un presupuesto total de $575.
+          Tu tarea es calcular el costo de las entradas, la comida, el transporte del hotel al estadio y de vuelta, y el recuerdo del equipo.
           También debes determinar los horarios de salida y regreso al hotel.
 
 
         </p>
-        <p className="w-[700px] h-[450px] container mx-auto px-4 bg-slate-400 mb-3 p-4 rounded-md text-black flex justify-between">
+        <p className="max-w-lg mx-auto bg-blue-300 p-3 text-black rounded-md">
 
           INFORMACIÓN RESPECTO A LOS PRECIOS: <br />
           Ten presente que todos deben estar ubicados en la misma sección. <br />
@@ -98,28 +91,32 @@ export default function Home() {
           Un trayecto por $3,25 <br />
           2 trayectos por $6 <br />
           10 trayectos por $26,50.
-
-
         </p>
       </div>
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded"
-        onClick={geminiCall}
-      >
-        Generar Respuesta
-      </button>
-      <h2>
-        <strong>Respuesta:</strong>
-      </h2>
-      <ul>
-        <li>
-          <strong>Respuesta Correcta:</strong> {correctAnswer}
+      <div>
+        <button
+          className="  bg-blue-300 hover:bg-blue-700 text-black p-4 font-bold rounded-lg "
+          onClick={geminiCall}>
+          Generar Respuesta
+        </button>
+
+      </div>
+
+      <ul className="space-y-4 w-1/3 ">
+        <li className="bg-gray-200 text-black p-4 rounded-lg shadow-md">
+
+          <strong className="text-black pr-4">Respuesta 1:</strong>
+          <h6 className="text-black">{correctAnswer}</h6>
         </li>
-        <li>
-          <strong>Respuesta Incorrecta 1:</strong> {wrongAnswer1}
+        <li className="bg-gray-200 text-black p-4 rounded-lg shadow-md">
+
+          <strong className="text-black pr-4">Respuesta 2:</strong>
+          <h6 className="text-black">{wrongAnswer1}</h6>
         </li>
-        <li>
-          <strong>Respuesta Incorrecta 2:</strong> {wrongAnswer2}
+        <li className="bg-gray-200 text-black p-4 rounded-lg shadow-md">
+
+          <strong className="text-black pr-4 grow">Respuesta 3:</strong>
+          <h6 className="text-black">{wrongAnswer2}</h6>
         </li>
       </ul>
     </section>
