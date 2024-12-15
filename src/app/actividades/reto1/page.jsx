@@ -22,9 +22,7 @@ export default function Reto1() {
   const fixedPrompt =
     "Teniendo en cuenta el siguiente planteamiento, genera tres resultados dos incorrectos y uno correcto: Dos de tus tíos que viven en Ecuador, en la ciudad de Ibarra, los invitan a tu hermano ya ti a pasar unos días en su casa en estas vacaciones. Tu cumpleaños Será pronto, por lo que tu tía ha decidido celebrarlo asistiendo a un partido de fútbol en el estadio Olímpico Atahualpa (en la ciudad de Quito). Tus tíos pagarán las cuatro boletas del partido, la noche en el hotel y la comida que consumirán durante. el Partido. Además, quieres regalarte un recuerdo del equipo para tu cumpleaños. Para ello, tus tíos han destinado un presupuesto total de $575 (la moneda oficial en Ecuador es el dólar). las cuatro boletas para ir al partido de fútbol, el costo de la comida de los cuatro durante el partido, y los pasajes de transporte de los cuatro del hotel al estadio y de vuelta al hotel. recuerdo del equipo. Tus tíos también quieren que determine a qué hora tendrán que salir del hotel para ir al estadio ya qué hora estarán de vuelta. Información con respecto a los precios: Ten presente que todos deben estar ubicados en la misma sección. Sección de admisión general: $22,50 Sección 4: $29 Sección 3: $46,75 Sección 2: $61,25 Sección 1: $82 Camiseta oficial del equipo: $45 Cachucha estampada: $22 Camiseta sin estampado: $15 Saco: $52 Bufanda: $26 Comida (un pedazo de pizza, un helado y una limonada): $14,75 El costo de un cuarto de hotel para cuatro personas: $239,95 El costo de los trayectos (pasajes para tomar el transporte público): Un trayecto por $3,25, 2 trayectos por $6 y 10 por $26,50.";
 
-  const [correctAnswer, setCorrectAnswer] = useState("");
-  const [wrongAnswer1, setWrongAnswer1] = useState("");
-  const [wrongAnswer2, setWrongAnswer2] = useState("");
+  const [answers, setAnswers] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
 
@@ -37,9 +35,13 @@ export default function Reto1() {
         const correct = responseJSON.find((item) => item.correcta);
         const wrongs = responseJSON.filter((item) => !item.correcta);
 
-        setCorrectAnswer(correct?.respuesta || "No disponible");
-        setWrongAnswer1(wrongs[0]?.respuesta || "No disponible");
-        setWrongAnswer2(wrongs[1]?.respuesta || "No disponible");
+        const shuffledAnswers = shuffleArray([
+          { text: correct?.respuesta || "No disponible", correcta: true },
+          { text: wrongs[0]?.respuesta || "No disponible", correcta: false },
+          { text: wrongs[1]?.respuesta || "No disponible", correcta: false },
+        ]);
+
+        setAnswers(shuffledAnswers);
       } else {
         console.error("La respuesta no está en el formato esperado.");
       }
@@ -48,15 +50,16 @@ export default function Reto1() {
     }
   };
 
+  const shuffleArray = (array) => {
+    return array
+      .map((item) => ({ ...item, sortKey: Math.random() }))
+      .sort((a, b) => a.sortKey - b.sortKey)
+      .map((item) => ({ text: item.text, correcta: item.correcta }));
+  };
+
   const handleAnswerSelection = (answer) => {
     setSelectedAnswer(answer);
-
-    // Verificar si es correcta
-    if (answer === correctAnswer) {
-      setIsCorrect(true);
-    } else {
-      setIsCorrect(false);
-    }
+    setIsCorrect(answer.correcta);
   };
 
   return (
@@ -109,33 +112,20 @@ export default function Reto1() {
 
       {/* Sección de las respuestas */}
       <ul className="grid gap-4">
-        <li className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md">
-          <button
-            onClick={() => handleAnswerSelection(correctAnswer)}
-            className="text-left w-full"
+        {answers.map((answer, index) => (
+          <li
+            key={index}
+            className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md"
           >
-            <strong className="pr-4">Respuesta 1:</strong>
-            {correctAnswer}
-          </button>
-        </li>
-        <li className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md">
-          <button
-            onClick={() => handleAnswerSelection(wrongAnswer1)}
-            className="text-left w-full"
-          >
-            <strong className="pr-4">Respuesta 2:</strong>
-            {wrongAnswer1}
-          </button>
-        </li>
-        <li className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md">
-          <button
-            onClick={() => handleAnswerSelection(wrongAnswer2)}
-            className="text-left w-full"
-          >
-            <strong className="pr-4">Respuesta 3:</strong>
-            {wrongAnswer2}
-          </button>
-        </li>
+            <button
+              onClick={() => handleAnswerSelection(answer)}
+              className="text-left w-full"
+            >
+              <strong className="pr-4">Respuesta {index + 1}:</strong>
+              {answer.text}
+            </button>
+          </li>
+        ))}
       </ul>
 
       {/* Resultado */}
