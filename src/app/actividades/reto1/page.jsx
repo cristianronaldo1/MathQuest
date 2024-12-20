@@ -3,15 +3,13 @@ import { useState, useEffect } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 //Importa al esquema desde el archivo
 import { schema } from "../../schema";
-
-console.log("Api de la ia", process.env.NEXT_PUBLIC_API_GEMINI_KEY);
-console.log("Api de la TEST", process.env.NEXT_PUBLIC_TEST);
+import SideNav from "../../components/side-nav";
 
 // Configuración del modelo de Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_API_GEMINI_KEY);
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash",
-  generationConfig: {
+  generationConfig: { 
     responseMimeType: "application/json",
     // aqui utiliza el esquema importado.
     responseSchema: schema,
@@ -25,8 +23,10 @@ export default function Reto1() {
   const [answers, setAnswers] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isCorrect, setIsCorrect] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const geminiCall = async () => {
+    setLoading(true);
     try {
       const result = await model.generateContent(fixedPrompt);
       const responseJSON = JSON.parse(result.response.text());
@@ -48,6 +48,7 @@ export default function Reto1() {
     } catch (error) {
       console.error("Error procesando la respuesta:", error);
     }
+    setLoading(false);
   };
 
   const shuffleArray = (array) => {
@@ -63,81 +64,85 @@ export default function Reto1() {
   };
 
   return (
-    <section className="flex flex-col gap-6">
-      {/* Sección de la pregunta */}
-      <div className="bg-gray-300 text-black p-6 rounded-lg shadow-md w-full">
-        <h1 className="text-xl font-bold mb-4">
-          Teniendo en cuenta el siguiente planteamiento, genera tres resultados
-          donde uno sea correcto:
-        </h1>
-        <p className="bg-blue-300 p-3 rounded-md text-black">
-          Tus tíos en Ibarra, Ecuador, invitan a ti y a tu hermano a pasar las
-          vacaciones en su casa. Para celebrar tu cumpleaños, tu tía ha planeado
-          asistir a un partido de fútbol en el estadio Olímpico Atahualpa en
-          Quito. Tus tíos cubrirán las entradas, la noche en el hotel y la comida
-          durante el partido, además de un recuerdo del equipo. Tienen un
-          presupuesto total de $575. Tu tarea es calcular el costo de las
-          entradas, la comida, el transporte del hotel al estadio y de vuelta, y
-          el recuerdo del equipo. También debes determinar los horarios de salida
-          y regreso al hotel.
-        </p>
-        <p className="bg-blue-300 p-3 rounded-md text-black mt-4">
-          <strong>INFORMACIÓN RESPECTO A LOS PRECIOS:</strong> <br />
-          Sección de admisión general: $22,50 <br />
-          Sección 4: $29 <br />
-          Sección 3: $46,75 <br />
-          Sección 2: $61,25 <br />
-          Sección 1: $82 <br />
-          Camiseta oficial del equipo: $45 <br />
-          Cachucha estampada: $22 <br />
-          Camiseta sin estampado: $15 <br />
-          Saco: $52 <br />
-          Bufanda: $26 <br />
-          Comida (un pedazo de pizza, un helado y una limonada): $14,75 <br />
-          El costo de un cuarto de hotel para cuatro personas: $239,95 <br />
-          El costo de los trayectos (pasajes para tomar el transporte público):
-          Un trayecto por $3,25, 2 trayectos por $6 y 10 trayectos por $26,50.
-        </p>
-      </div>
-
-      {/* Sección del botón */}
-      <div className="flex justify-center">
-        <button
-          className="bg-blue-300 hover:bg-blue-700 text-black p-4 font-bold rounded-lg"
-          onClick={geminiCall}
-        >
-          Generar Respuesta
-        </button>
-      </div>
-
-      {/* Sección de las respuestas */}
-      <ul className="grid gap-4">
-        {answers.map((answer, index) => (
-          <li
-            key={index}
-            className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md"
-          >
-            <button
-              onClick={() => handleAnswerSelection(answer)}
-              className="text-left w-full"
-            >
-              <strong className="pr-4">Respuesta {index + 1}:</strong>
-              {answer.text}
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      {/* Resultado */}
-      {selectedAnswer && (
-        <div
-          className={`p-4 rounded-lg text-center font-bold ${
-            isCorrect ? "bg-green-300" : "bg-red-300"
-          }`}
-        >
-          {isCorrect ? "¡Respuesta Correcta!" : "Respuesta Incorrecta"}
+    <div>
+      <SideNav/>
+      <section className="flex flex-col gap-6">
+        {/* Sección de la pregunta */}
+        <div className="bg-gray-300 text-black p-6 rounded-lg shadow-md w-full">
+          <h1 className="text-xl font-bold mb-4">
+            Teniendo en cuenta el siguiente planteamiento, genera tres resultados
+            donde uno sea correcto:
+          </h1>
+          <p className="bg-blue-300 p-3 rounded-md text-black">
+            Tus tíos en Ibarra, Ecuador, invitan a ti y a tu hermano a pasar las
+            vacaciones en su casa. Para celebrar tu cumpleaños, tu tía ha planeado
+            asistir a un partido de fútbol en el estadio Olímpico Atahualpa en
+            Quito. Tus tíos cubrirán las entradas, la noche en el hotel y la comida
+            durante el partido, además de un recuerdo del equipo. Tienen un
+            presupuesto total de $575. Tu tarea es calcular el costo de las
+            entradas, la comida, el transporte del hotel al estadio y de vuelta, y
+            el recuerdo del equipo. También debes determinar los horarios de salida
+            y regreso al hotel.
+          </p>
+          <p className="bg-blue-300 p-3 rounded-md text-black mt-4">
+            <strong>INFORMACIÓN RESPECTO A LOS PRECIOS:</strong> <br />
+            Sección de admisión general: $22,50 <br />
+            Sección 4: $29 <br />
+            Sección 3: $46,75 <br />
+            Sección 2: $61,25 <br />
+            Sección 1: $82 <br />
+            Camiseta oficial del equipo: $45 <br />
+            Cachucha estampada: $22 <br />
+            Camiseta sin estampado: $15 <br />
+            Saco: $52 <br />
+            Bufanda: $26 <br />
+            Comida (un pedazo de pizza, un helado y una limonada): $14,75 <br />
+            El costo de un cuarto de hotel para cuatro personas: $239,95 <br />
+            El costo de los trayectos (pasajes para tomar el transporte público):
+            Un trayecto por $3,25, 2 trayectos por $6 y 10 trayectos por $26,50.
+          </p>
         </div>
-      )}
-    </section>
+
+        {/* Sección del botón */}
+        <div className="flex justify-center">
+          
+          {loading ? <img src="/reloj.gif" width={100} height={100}/>  : <button
+            className="bg-blue-300 hover:bg-blue-700 text-black p-4 font-bold rounded-lg"
+            onClick={geminiCall}
+          >
+            Generar Respuesta
+          </button>}
+        </div>
+
+        {/* Sección de las respuestas */}
+        <ul className="grid gap-4">
+          {answers.map((answer, index) => (
+            <li
+              key={index}
+              className="bg-gray-200 h-auto text-black p-4 rounded-lg shadow-md"
+            >
+              <button
+                onClick={() => handleAnswerSelection(answer)}
+                className="text-left w-full"
+              >
+                <strong className="pr-4">Respuesta {index + 1}:</strong>
+                {answer.text}
+              </button>
+            </li>
+          ))}
+        </ul>
+
+        {/* Resultado */}
+        {selectedAnswer && (
+          <div
+            className={`p-4 rounded-lg text-center font-bold ${
+              isCorrect ? "bg-green-300" : "bg-red-300"
+            }`}
+          >
+            {isCorrect ? "¡Respuesta Correcta!" : "Respuesta Incorrecta"}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
