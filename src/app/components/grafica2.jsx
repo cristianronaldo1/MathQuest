@@ -19,9 +19,9 @@ import {
 
 // Datos de ejemplo
 const chartData = [
-  { month: "Tú", desktop: 2},
-  { month: "Leo Troncoso", desktop: 1},
-  { month: "Geomer Simanca", desktop: 0},
+  { month: "Tú", desktop: 3},
+  { month: "Leo Troncoso", desktop: 2},
+  { month: "Geomer Simanca", desktop: 1},
 ];
 
 // Configuración de la gráfica
